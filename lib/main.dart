@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:english_words/english_words.dart';
 import 'SuggestionSaved.dart';
+
 void main() => runApp(MyApp());
 
 class MyApp extends StatelessWidget {
@@ -56,42 +57,23 @@ class RandomWordsState extends State<RandomWords> {
   }
 
   void _pushSaved() {
+    final Iterable<ListTile> tiles = _saved.map((WordPair pair) {
+      return ListTile(
+        title: Text(
+          pair.asPascalCase,
+          style: _biggerFont,
+        ),
+      );
+    });
+
+    final List<Widget> _divided = ListTile.divideTiles(
+      context: context,
+      tiles: tiles,
+    ).toList();
 
     Navigator.of(context).push(
-      MaterialPageRoute(builder: (context) => SuggestionSaved(divided: <Widget>[Text("oi"),Text("Teste")],)),
-    );
-
-//    Navigator.of(context).push(
-//      MaterialPageRoute<void>(
-//        builder: (BuildContext context) {
-//          final Iterable<ListTile> tiles = _saved.map((WordPair pair) {
-//            return ListTile(
-//              title: Text(
-//                pair.asPascalCase,
-//                style: _biggerFont,
-//              ),
-//            );
-//          });
-//
-//          final List<Widget> divided = ListTile.divideTiles(
-//            context: context,
-//            tiles: tiles,
-//          ).toList();
-//
-//          return _saveSuggestion(divided);
-//
-//        },
-//      ),
-//    );
-  }
-
-  StatefulWidget _saveSuggestion(List<Widget> divided){
-    return Scaffold(
-      appBar: AppBar(
-        title: Text('Saved Suggestions'),
-      ),
-      body: ListView(children: divided),
-    );
+      MaterialPageRoute(builder: (context) => SuggestionSaved(divided: _divided,)
+    ));
   }
 
   @override
