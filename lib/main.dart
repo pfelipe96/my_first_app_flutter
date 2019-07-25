@@ -1,96 +1,76 @@
 import 'package:flutter/material.dart';
-import 'package:english_words/english_words.dart';
-import 'SuggestionSaved.dart';
+import 'package:flutter_app/data/Beer.dart';
+import 'package:flutter_app/repository/API.dart';
 
 void main() => runApp(MyApp());
 
 class MyApp extends StatelessWidget {
   @override
-  Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'Startup Name Generator',
-      home: RandomWords(),
-      theme: ThemeData(
-        primaryColor: Colors.white,
-      ),
-    );
-  }
+  Widget build(BuildContext context) => MaterialApp(
+        title: 'List beers',
+        home: Beers(),
+        theme: ThemeData(
+          primaryColor: Colors.red,
+        ),
+      );
 }
 
-class RandomWordsState extends State<RandomWords> {
-  final _suggestion = <WordPair>[];
-  final _saved = Set<WordPair>();
+class BeersState extends State<Beers> {
   final _biggerFont = const TextStyle(fontSize: 18.0);
+  final List<Beer> _beers = <Beer>[];
+  final List<Beer> _saved = <Beer>[];
 
-  Widget _buildRow(WordPair pair) {
-    final alreadySaved = _saved.contains(pair);
+  @override
+  void initState() {
+    super.initState();
+    listenForBeers();
+  }
+
+  void listenForBeers() async {
+    await API
+        .getInstance()
+        .getBeers()
+        .then((onData) => setState(() => {_beers.addAll(onData)}));
+  }
+
+  Widget _buildBeers() {
+    return ListView.builder(
+        itemCount: _beers.length,
+        padding: const EdgeInsets.all(16.0),
+        itemBuilder: (context, i) => i.isOdd ? Divider() : _buildRow(_beers[i]));
+  }
+
+  Widget _buildRow(Beer beer) {
+    final alreadySaved = _saved.contains(beer);
 
     return ListTile(
       title: Text(
-        pair.asPascalCase,
+        beer.name,
         style: _biggerFont,
       ),
       trailing: Icon(
-        alreadySaved ? Icons.favorite : Icons.favorite,
+        Icons.favorite,
         color: alreadySaved ? Colors.red : null,
       ),
       onTap: () {
         setState(() {
-          alreadySaved ? _saved.remove(pair) : _saved.add(pair);
+          alreadySaved ? _saved.remove(beer) : _saved.add(beer);
         });
       },
     );
   }
 
-  Widget _buildSuggestion() {
-    return ListView.builder(
-        padding: const EdgeInsets.all(16.0),
-        itemBuilder: (context, i) {
-          if (i.isOdd) return Divider();
-
-          final index = i ~/ 2;
-          if (index >= _suggestion.length) {
-            _suggestion.addAll(generateWordPairs().take(10));
-          }
-          return _buildRow(_suggestion[index]);
-        });
-  }
-
-  void _pushSaved() {
-    final Iterable<ListTile> tiles = _saved.map((WordPair pair) {
-      return ListTile(
-        title: Text(
-          pair.asPascalCase,
-          style: _biggerFont,
-        ),
-      );
-    });
-
-    final List<Widget> _divided = ListTile.divideTiles(
-      context: context,
-      tiles: tiles,
-    ).toList();
-
-    Navigator.of(context).push(
-      MaterialPageRoute(builder: (context) => SuggestionSaved(divided: _divided,)
-    ));
-  }
-
   @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Text('Startup Name Generator'),
-        actions: <Widget>[
-          IconButton(icon: Icon(Icons.list), onPressed: _pushSaved)
-        ],
-      ),
-      body: _buildSuggestion(),
-    );
-  }
+  Widget build(BuildContext context) => Scaffold(
+        appBar: AppBar(
+          centerTitle: true,
+          title: Text('List beers'),
+        ),
+        body: _buildBeers(),
+      );
 }
 
-class RandomWords extends StatefulWidget {
+class Beers extends StatefulWidget {
   @override
-  RandomWordsState createState() => RandomWordsState();
+  BeersState createState() => BeersState();
 }
