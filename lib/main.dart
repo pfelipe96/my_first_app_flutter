@@ -37,7 +37,8 @@ class BeersState extends State<Beers> {
     return ListView.builder(
         itemCount: _beers.length,
         padding: const EdgeInsets.all(16.0),
-        itemBuilder: (context, i) => i.isOdd ? Divider() : _buildRow(_beers[i]));
+        itemBuilder: (context, i) =>
+            i.isOdd ? Divider() : _buildRow(_beers[i]));
   }
 
   Widget _buildRow(Beer beer) {
